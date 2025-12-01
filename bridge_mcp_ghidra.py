@@ -60,14 +60,15 @@ def safe_post(endpoint: str, data: dict | str) -> str:
 @mcp.tool()
 def list_methods(offset: int = 0, limit: int = 100) -> list:
     """
-    List all function names in the program with pagination.
+    [WARNING: HIGH NOISE] List all function names in the program with pagination.
+    Prefer `search_functions_by_name` or `list_imports` to find relevant entry points.
     """
     return safe_get("methods", {"offset": offset, "limit": limit})
 
 @mcp.tool()
 def list_classes(offset: int = 0, limit: int = 100) -> list:
     """
-    List all namespace/class names in the program with pagination.
+    [WARNING: HIGH NOISE] List all namespace/class names in the program with pagination.
     """
     return safe_get("classes", {"offset": offset, "limit": limit})
 
@@ -95,14 +96,15 @@ def rename_data(address: str, new_name: str) -> str:
 @mcp.tool()
 def list_segments(offset: int = 0, limit: int = 100) -> list:
     """
-    List all memory segments in the program with pagination.
+    [WARNING: HIGH NOISE] List all memory segments in the program with pagination.
     """
     return safe_get("segments", {"offset": offset, "limit": limit})
 
 @mcp.tool()
 def list_imports(offset: int = 0, limit: int = 100) -> list:
     """
-    List imported symbols in the program with pagination.
+    [RECOMMENDED] List imported symbols in the program with pagination.
+    Use this to find dangerous external functions (e.g., system, strcpy).
     """
     return safe_get("imports", {"offset": offset, "limit": limit})
 
@@ -116,14 +118,14 @@ def list_exports(offset: int = 0, limit: int = 100) -> list:
 @mcp.tool()
 def list_namespaces(offset: int = 0, limit: int = 100) -> list:
     """
-    List all non-global namespaces in the program with pagination.
+    [WARNING: HIGH NOISE] List all non-global namespaces in the program with pagination.
     """
     return safe_get("namespaces", {"offset": offset, "limit": limit})
 
 @mcp.tool()
 def list_data_items(offset: int = 0, limit: int = 100) -> list:
     """
-    List defined data labels and their values with pagination.
+    [WARNING: HIGH NOISE] List defined data labels and their values with pagination.
     """
     return safe_get("data", {"offset": offset, "limit": limit})
 
@@ -171,14 +173,16 @@ def get_current_function() -> str:
 @mcp.tool()
 def list_functions() -> list:
     """
-    List all functions in the database.
+    [WARNING: HIGH NOISE] List all functions in the database.
+    Prefer `search_functions_by_name`.
     """
     return safe_get("list_functions")
 
 @mcp.tool()
 def decompile_function_by_address(address: str) -> str:
     """
-    Decompile a function at the given address.
+    [RECOMMENDED] Decompile a function at the given address.
+    Use this only when you have confirmed the function is relevant via xrefs or Angr analysis.
     """
     return "\n".join(safe_get("decompile_function", {"address": address}))
 
@@ -227,7 +231,8 @@ def set_local_variable_type(function_address: str, variable_name: str, new_type:
 @mcp.tool()
 def get_xrefs_to(address: str, offset: int = 0, limit: int = 100) -> list:
     """
-    Get all references to the specified address (xref to).
+    [RECOMMENDED] Get all references to the specified address (xref to).
+    Use this to find where dangerous imports or data are used.
     
     Args:
         address: Target address in hex format (e.g. "0x1400010a0")
@@ -272,7 +277,7 @@ def get_function_xrefs(name: str, offset: int = 0, limit: int = 100) -> list:
 @mcp.tool()
 def list_strings(offset: int = 0, limit: int = 2000, filter: str = None) -> list:
     """
-    List all defined strings in the program with their addresses.
+    [WARNING: HIGH NOISE] List all defined strings in the program with their addresses.
     
     Args:
         offset: Pagination offset (default: 0)
