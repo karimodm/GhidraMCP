@@ -58,18 +58,22 @@ def safe_post(endpoint: str, data: dict | str) -> str:
         return f"Request failed: {str(e)}"
 
 @mcp.tool()
-def list_methods(offset: int = 0, limit: int = 100) -> list:
+def list_methods(offset: int = 0, limit: int = 100, allow_large: bool = False) -> list:
     """
-    [WARNING: HIGH NOISE] List all function names in the program with pagination.
+    [WARNING: HIGH NOISE] List function names (paged). Set allow_large=True to request >400 entries.
     Prefer `search_functions_by_name` or `list_imports` to find relevant entry points.
     """
+    if not allow_large and limit > 400:
+        return ["Refused: set allow_large=True to fetch more than 400 entries"]
     return safe_get("methods", {"offset": offset, "limit": limit})
 
 @mcp.tool()
-def list_classes(offset: int = 0, limit: int = 100) -> list:
+def list_classes(offset: int = 0, limit: int = 100, allow_large: bool = False) -> list:
     """
-    [WARNING: HIGH NOISE] List all namespace/class names in the program with pagination.
+    [WARNING: HIGH NOISE] List namespace/class names (paged). Set allow_large=True to request >400 entries.
     """
+    if not allow_large and limit > 400:
+        return ["Refused: set allow_large=True to fetch more than 400 entries"]
     return safe_get("classes", {"offset": offset, "limit": limit})
 
 @mcp.tool()
@@ -79,75 +83,63 @@ def decompile_function(name: str) -> str:
     """
     return safe_post("decompile", name)
 
-@mcp.tool()
-def rename_function(old_name: str, new_name: str) -> str:
-    """
-    Rename a function by its current name to a new user-defined name.
-    """
-    return safe_post("renameFunction", {"oldName": old_name, "newName": new_name})
 
 @mcp.tool()
-def rename_data(address: str, new_name: str) -> str:
+def list_segments(offset: int = 0, limit: int = 100, allow_large: bool = False) -> list:
     """
-    Rename a data label at the specified address.
+    [WARNING: HIGH NOISE] List memory segments (paged). Set allow_large=True to request >400 entries.
     """
-    return safe_post("renameData", {"address": address, "newName": new_name})
-
-@mcp.tool()
-def list_segments(offset: int = 0, limit: int = 100) -> list:
-    """
-    [WARNING: HIGH NOISE] List all memory segments in the program with pagination.
-    """
+    if not allow_large and limit > 400:
+        return ["Refused: set allow_large=True to fetch more than 400 entries"]
     return safe_get("segments", {"offset": offset, "limit": limit})
 
 @mcp.tool()
-def list_imports(offset: int = 0, limit: int = 100) -> list:
+def list_imports(offset: int = 0, limit: int = 100, allow_large: bool = False) -> list:
     """
-    [RECOMMENDED] List imported symbols in the program with pagination.
-    Use this to find dangerous external functions (e.g., system, strcpy).
+    [RECOMMENDED] List imported symbols (paged). Use this to find dangerous external functions.
     """
+    if not allow_large and limit > 400:
+        return ["Refused: set allow_large=True to fetch more than 400 entries"]
     return safe_get("imports", {"offset": offset, "limit": limit})
 
 @mcp.tool()
-def list_exports(offset: int = 0, limit: int = 100) -> list:
+def list_exports(offset: int = 0, limit: int = 100, allow_large: bool = False) -> list:
     """
-    List exported functions/symbols with pagination.
+    List exported symbols (paged). Set allow_large=True to request >400 entries.
     """
+    if not allow_large and limit > 400:
+        return ["Refused: set allow_large=True to fetch more than 400 entries"]
     return safe_get("exports", {"offset": offset, "limit": limit})
 
 @mcp.tool()
-def list_namespaces(offset: int = 0, limit: int = 100) -> list:
+def list_namespaces(offset: int = 0, limit: int = 100, allow_large: bool = False) -> list:
     """
-    [WARNING: HIGH NOISE] List all non-global namespaces in the program with pagination.
+    [WARNING: HIGH NOISE] List non-global namespaces (paged). Set allow_large=True to request >400 entries.
     """
+    if not allow_large and limit > 400:
+        return ["Refused: set allow_large=True to fetch more than 400 entries"]
     return safe_get("namespaces", {"offset": offset, "limit": limit})
 
 @mcp.tool()
-def list_data_items(offset: int = 0, limit: int = 100) -> list:
+def list_data_items(offset: int = 0, limit: int = 100, allow_large: bool = False) -> list:
     """
-    [WARNING: HIGH NOISE] List defined data labels and their values with pagination.
+    [WARNING: HIGH NOISE] List defined data labels (paged). Set allow_large=True to request >400 entries.
     """
+    if not allow_large and limit > 400:
+        return ["Refused: set allow_large=True to fetch more than 400 entries"]
     return safe_get("data", {"offset": offset, "limit": limit})
 
 @mcp.tool()
-def search_functions_by_name(query: str, offset: int = 0, limit: int = 100) -> list:
+def search_functions_by_name(query: str, offset: int = 0, limit: int = 100, allow_large: bool = False) -> list:
     """
-    Search for functions whose name contains the given substring.
+    Search for functions whose name contains the given substring (paged).
     """
     if not query:
         return ["Error: query string is required"]
+    if not allow_large and limit > 400:
+        return ["Refused: set allow_large=True to fetch more than 400 entries"]
     return safe_get("searchFunctions", {"query": query, "offset": offset, "limit": limit})
 
-@mcp.tool()
-def rename_variable(function_name: str, old_name: str, new_name: str) -> str:
-    """
-    Rename a local variable within a function.
-    """
-    return safe_post("renameVariable", {
-        "functionName": function_name,
-        "oldName": old_name,
-        "newName": new_name
-    })
 
 @mcp.tool()
 def get_function_by_address(address: str) -> str:
@@ -193,40 +185,6 @@ def disassemble_function(address: str) -> list:
     """
     return safe_get("disassemble_function", {"address": address})
 
-@mcp.tool()
-def set_decompiler_comment(address: str, comment: str) -> str:
-    """
-    Set a comment for a given address in the function pseudocode.
-    """
-    return safe_post("set_decompiler_comment", {"address": address, "comment": comment})
-
-@mcp.tool()
-def set_disassembly_comment(address: str, comment: str) -> str:
-    """
-    Set a comment for a given address in the function disassembly.
-    """
-    return safe_post("set_disassembly_comment", {"address": address, "comment": comment})
-
-@mcp.tool()
-def rename_function_by_address(function_address: str, new_name: str) -> str:
-    """
-    Rename a function by its address.
-    """
-    return safe_post("rename_function_by_address", {"function_address": function_address, "new_name": new_name})
-
-@mcp.tool()
-def set_function_prototype(function_address: str, prototype: str) -> str:
-    """
-    Set a function's prototype.
-    """
-    return safe_post("set_function_prototype", {"function_address": function_address, "prototype": prototype})
-
-@mcp.tool()
-def set_local_variable_type(function_address: str, variable_name: str, new_type: str) -> str:
-    """
-    Set a local variable's type.
-    """
-    return safe_post("set_local_variable_type", {"function_address": function_address, "variable_name": variable_name, "new_type": new_type})
 
 @mcp.tool()
 def get_xrefs_to(address: str, offset: int = 0, limit: int = 100) -> list:
@@ -275,18 +233,12 @@ def get_function_xrefs(name: str, offset: int = 0, limit: int = 100) -> list:
     return safe_get("function_xrefs", {"name": name, "offset": offset, "limit": limit})
 
 @mcp.tool()
-def list_strings(offset: int = 0, limit: int = 2000, filter: str = None) -> list:
+def list_strings(offset: int = 0, limit: int = 200, filter: str = None, allow_large: bool = False) -> list:
     """
-    [WARNING: HIGH NOISE] List all defined strings in the program with their addresses.
-    
-    Args:
-        offset: Pagination offset (default: 0)
-        limit: Maximum number of strings to return (default: 2000)
-        filter: Optional filter to match within string content
-        
-    Returns:
-        List of strings with their addresses
+    [WARNING: HIGH NOISE] List defined strings (paged). Use `filter` first; set allow_large=True to request >400 entries.
     """
+    if not allow_large and limit > 400:
+        return ["Refused: set allow_large=True to fetch more than 400 entries"]
     params = {"offset": offset, "limit": limit}
     if filter:
         params["filter"] = filter
@@ -340,4 +292,3 @@ def main():
         
 if __name__ == "__main__":
     main()
-
