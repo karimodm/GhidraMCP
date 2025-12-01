@@ -1,0 +1,17 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "ghidra-mcp-bridge"
+version = "0.1.0"
+description = "FastMCP bridge exposing Ghidra analysis endpoints."
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+  "mcp==1.5.0",
+  "requests==2.32.3",
+]
+
+[project.scripts]
+bridge-mcp-ghidra = "bridge_mcp_ghidra:main"
